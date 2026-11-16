@@ -23,11 +23,11 @@ html,body{width:100%;min-height:100%;margin:0}
 .market-mini{height:auto!important;min-height:0;flex:1;margin:0;border-radius:4px}
 .market-status{font-size:8px;line-height:1.1;min-height:0;padding:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
-#range-select{background:#16243a;color:#e9f0ff;border:1px solid rgba(112,229,211,.4);border-radius:9px;padding:8px 12px;font:inherit;font-size:13px;cursor:pointer}#range-select:focus-visible{outline:2px solid #70e5d3}.range-label{color:#9ab1cd;font-size:12px}@media(max-width:600px){.top-right>span{display:none}.range-label{font-size:11px}#range-select{font-size:12px;padding:7px 9px}}@media(orientation:landscape) and (max-height:650px) and (pointer:coarse){.top-right{display:flex!important}.range-label{font-size:9px}#range-select{font-size:11px;padding:3px 8px}} </style>
+#range-select{background:#16243a;color:#e9f0ff;border:1px solid rgba(112,229,211,.4);border-radius:9px;padding:8px 12px;font:inherit;font-size:13px;cursor:pointer}#range-select:focus-visible{outline:2px solid #70e5d3}.range-label{color:#9ab1cd;font-size:12px}@media(max-width:600px){.top-right>span{display:none}.range-label{font-size:11px}#range-select{font-size:12px;padding:7px 9px}}@media(orientation:landscape) and (max-height:650px) and (pointer:coarse){.top-right{display:flex!important}.range-label{font-size:9px}#range-select{font-size:11px;padding:3px 8px}} .daily-panel{border:1px solid var(--border);border-radius:15px;background:var(--surface);padding:12px 14px;margin:12px 0}.daily-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px;font-size:13px}.daily-heading span{font-size:11px;color:var(--muted)}.daily-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.daily-item{background:rgba(20,33,54,.8);border:1px solid var(--border);border-radius:10px;padding:10px 9px;min-width:0;display:flex;flex-direction:column;gap:4px}.daily-name{font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.daily-change{font-size:clamp(15px,1.4vw,24px);font-variant-numeric:tabular-nums}.daily-change.up{color:#53c8ad}.daily-change.down{color:#ed667b}.daily-change.flat{color:var(--muted)}.daily-date{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:850px){.daily-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:400px){.daily-grid{gap:5px}.daily-item{padding:7px 5px}.daily-name{font-size:10px}.daily-date{font-size:9px}}@media(orientation:landscape) and (max-height:650px) and (pointer:coarse){.daily-panel{display:block!important;margin:1px 0 4px;padding:3px 5px;border-radius:7px}.daily-heading{margin-bottom:3px;font-size:10px}.daily-heading span{display:none}.daily-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:3px}.daily-item{padding:2px 4px;gap:0;border-radius:4px}.daily-name{font-size:9px}.daily-change{font-size:12px}.daily-date{font-size:8px}.grid{height:calc(100dvh - 125px)}}</style>
 </head>
 <body><div class="shell"><header class="topbar"><a class="brand" href="./">LAOXU<em> / </em>MARKET</a><div class="top-right"><label for="range-select" class="range-label">时间范围</label><select id="range-select" aria-label="全部六张图表的时间范围"><option value="1d">一天</option><option value="1m">一个月</option><option value="1y" selected>一年</option><option value="3y">三年</option><option value="5y">五年</option></select><span><i class="dot"></i>PUBLIC MARKET DATA</span></div></header>
 <section class="hero"><div class="eyebrow">THE GLOBAL PULSE / 全球市场脉搏</div><h1>See the <span>bigger picture.</span></h1><p class="subtitle">只看重要的六个市场。行情由本站本地图表绘制，不使用模拟数据。</p><div class="meta"><span>◉ 6 个关注市场</span><span>◷ 公共行情数据可能延迟</span><span id="clock" class="updated"></span></div></section>
-<section class="ticker-shell" id="ticker"><div class="loading">公开行情数据每三小时尝试更新一次 · 图表不依赖境外第三方脚本</div></section>
+<section class="daily-panel" aria-label="六大市场最新交易日涨跌"><div class="daily-heading"><strong>今日市场涨跌</strong><span>按各市场最新交易日收盘价对比前一交易日 · 非实时</span></div><div class="daily-grid" id="daily-grid" aria-live="polite"></div></section>
 <div class="section-head"><h2>Markets <span style="color:var(--muted);font-weight:400">/ 六大市场</span></h2><p>六张独立大图 · 右上角切换时间范围 · 六图联动</p></div>
 <main><section class="grid" id="grid" aria-label="六大市场"></section>
 <p class="note">行情展示仅供信息参考，不构成投资建议。指数可能使用代表性行情源，市场数据可能延迟、受交易所授权及地区限制。图表由本站原生 SVG 绘制；行情由 GitHub Actions 从 Yahoo Finance 非官方公共接口定时获取。数据可能延迟，免费数据源可能中断；网站会显示数据日期。网站不收集、存储或发布任何个人资产、持仓或其他隐私信息。</p></main>
@@ -49,6 +49,7 @@ candles.forEach((c,i)=>{const x=left+(i+.5)*dx;const color=c.close>=c.open?"#53c
 const last=candles[candles.length-1],prev=candles[0];const diff=last.close-prev.open;const label=el("text",{x:left,y:15,fill:diff>=0?"#53c8ad":"#ed667b","font-size":14,"font-weight":600});label.textContent=last.close.toLocaleString("en-US",{maximumFractionDigits:4})+"   "+(diff>=0?"+":"")+(diff/prev.open*100).toFixed(2)+"% 区间变化";svg.append(label);node.append(svg)}
 const rangeSelect=document.getElementById("range-select");
 let currentPayload=null;
+const dailyGrid=document.getElementById("daily-grid");
 function rowsFor(data,range){
  const list=range==="1d"?data.intraday:range==="1m"?data.daily:range==="5y"?data.monthly:data.weekly;
  if(!Array.isArray(list))return [];
@@ -58,6 +59,27 @@ function rowsFor(data,range){
  if(!Number.isFinite(end))return [];
  const cutoff=end-days*86400000;
  return list.filter(x=>Date.parse(x.date)>=cutoff);
+}
+function renderDaily(){
+ dailyGrid.replaceChildren();
+ markets.forEach(m=>{
+  const data=currentPayload?.markets?.[m.id],daily=data?.daily;
+  const card=document.createElement("div");card.className="daily-item";
+  const name=document.createElement("span");name.className="daily-name";name.textContent=m.title;card.append(name);
+  const value=document.createElement("strong");value.className="daily-change";
+  const sub=document.createElement("small");sub.className="daily-date";
+  if(Array.isArray(daily)&&daily.length>=2){
+   const now=daily[daily.length-1],prior=daily[daily.length-2];
+   if(Number.isFinite(now.close)&&Number.isFinite(prior.close)&&prior.close!==0){
+    const change=now.close-prior.close,pct=change/prior.close*100;
+    const positive=change>0,negative=change<0;
+    value.classList.add(positive?"up":negative?"down":"flat");
+    value.textContent=(positive?"+":"")+pct.toFixed(2)+"%";
+    sub.textContent=(positive?"+":"")+change.toLocaleString("en-US",{maximumFractionDigits:4})+" · "+now.date.slice(0,10);
+   }else{value.textContent="暂无数据";sub.textContent="报价无效"}
+  }else{value.textContent="暂无数据";sub.textContent="等待日线数据更新"}
+  card.append(value,sub);dailyGrid.append(card);
+ });
 }
 function renderAll(){
  if(!currentPayload)return;
@@ -73,7 +95,7 @@ function renderAll(){
  });
 }
 rangeSelect.addEventListener("change",renderAll);
-async function load(){try{const resp=await fetch("./data/markets.json?v="+Date.now(),{cache:"no-store"});if(!resp.ok)throw Error("行情文件尚未生成 HTTP "+resp.status);currentPayload=await resp.json();renderAll()}catch(err){markets.forEach((m,i)=>{document.getElementById("mini-"+i).innerHTML='<div class="loading">行情暂不可用</div>';document.getElementById("status-"+i).textContent=err.message})}}
+async function load(){try{const resp=await fetch("./data/markets.json?v="+Date.now(),{cache:"no-store"});if(!resp.ok)throw Error("行情文件尚未生成 HTTP "+resp.status);currentPayload=await resp.json();renderDaily();renderAll()}catch(err){dailyGrid.textContent="今日涨跌数据暂不可用";markets.forEach((m,i)=>{document.getElementById("mini-"+i).innerHTML='<div class="loading">行情暂不可用</div>';document.getElementById("status-"+i).textContent=err.message})}}
 load();setInterval(load,15*60*1000);
 function clock(){document.querySelector("#clock").textContent=new Intl.DateTimeFormat("zh-CN",{timeZone:"Asia/Shanghai",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date())+" 北京时间"}clock();setInterval(clock,60000);
 </script></body></html>
