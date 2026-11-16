@@ -23,7 +23,45 @@ html,body{width:100%;min-height:100%;margin:0}
 .market-mini{height:auto!important;min-height:0;flex:1;margin:0;border-radius:4px}
 .market-status{font-size:8px;line-height:1.1;min-height:0;padding:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
-#range-select{background:#16243a;color:#e9f0ff;border:1px solid rgba(112,229,211,.4);border-radius:9px;padding:8px 12px;font:inherit;font-size:13px;cursor:pointer}#range-select:focus-visible{outline:2px solid #70e5d3}.range-label{color:#9ab1cd;font-size:12px}@media(max-width:600px){.top-right>span{display:none}.range-label{font-size:11px}#range-select{font-size:12px;padding:7px 9px}}@media(orientation:landscape) and (max-height:650px) and (pointer:coarse){.top-right{display:flex!important}.range-label{font-size:9px}#range-select{font-size:11px;padding:3px 8px}} .daily-panel{border:1px solid var(--border);border-radius:15px;background:var(--surface);padding:12px 14px;margin:12px 0}.daily-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px;font-size:13px}.daily-heading span{font-size:11px;color:var(--muted)}.daily-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.daily-item{background:rgba(20,33,54,.8);border:1px solid var(--border);border-radius:10px;padding:10px 9px;min-width:0;display:flex;flex-direction:column;gap:4px}.daily-name{font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.daily-change{font-size:clamp(15px,1.4vw,24px);font-variant-numeric:tabular-nums}.daily-change.up{color:#53c8ad}.daily-change.down{color:#ed667b}.daily-change.flat{color:var(--muted)}.daily-date{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:850px){.daily-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:400px){.daily-grid{gap:5px}.daily-item{padding:7px 5px}.daily-name{font-size:10px}.daily-date{font-size:9px}}@media(orientation:landscape) and (max-height:650px) and (pointer:coarse){.daily-panel{display:block!important;margin:1px 0 4px;padding:3px 5px;border-radius:7px}.daily-heading{margin-bottom:3px;font-size:10px}.daily-heading span{display:none}.daily-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:3px}.daily-item{padding:2px 4px;gap:0;border-radius:4px}.daily-name{font-size:9px}.daily-change{font-size:12px}.daily-date{font-size:8px}.grid{height:calc(100dvh - 125px)}}</style>
+#range-select{background:#16243a;color:#e9f0ff;border:1px solid rgba(112,229,211,.4);border-radius:9px;padding:8px 12px;font:inherit;font-size:13px;cursor:pointer}#range-select:focus-visible{outline:2px solid #70e5d3}.range-label{color:#9ab1cd;font-size:12px}@media(max-width:600px){.top-right>span{display:none}.range-label{font-size:11px}#range-select{font-size:12px;padding:7px 9px}}@media(orientation:landscape) and (max-height:650px) and (pointer:coarse){.top-right{display:flex!important}.range-label{font-size:9px}#range-select{font-size:11px;padding:3px 8px}} .daily-panel{border:1px solid var(--border);border-radius:15px;background:var(--surface);padding:12px 14px;margin:12px 0}.daily-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px;font-size:13px}.daily-heading span{font-size:11px;color:var(--muted)}.daily-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.daily-item{background:rgba(20,33,54,.8);border:1px solid var(--border);border-radius:10px;padding:10px 9px;min-width:0;display:flex;flex-direction:column;gap:4px}.daily-name{font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.daily-change{font-size:clamp(15px,1.4vw,24px);font-variant-numeric:tabular-nums}.daily-change.up{color:#53c8ad}.daily-change.down{color:#ed667b}.daily-change.flat{color:var(--muted)}.daily-date{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:850px){.daily-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:400px){.daily-grid{gap:5px}.daily-item{padding:7px 5px}.daily-name{font-size:10px}.daily-date{font-size:9px}}@media(orientation:landscape) and (max-height:650px) and (pointer:coarse){.daily-panel{display:block!important;margin:1px 0 4px;padding:3px 5px;border-radius:7px}.daily-heading{margin-bottom:3px;font-size:10px}.daily-heading span{display:none}.daily-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:3px}.daily-item{padding:2px 4px;gap:0;border-radius:4px}.daily-name{font-size:9px}.daily-change{font-size:12px}.daily-date{font-size:8px}.grid{height:calc(100dvh - 125px)}}
+/* Tablet/iPad layout: override legacy breakpoint cascade at the end. */
+@media (min-width:700px) and (max-width:1450px) and (pointer:coarse){
+ .shell{width:100%;max-width:none;padding-inline:12px}
+ .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .asset{min-width:0;min-height:0;padding:12px;border-radius:13px}
+ .market-mini{height:clamp(210px,32vh,420px);min-height:0}
+ .asset h3{font-size:17px;margin:7px 0 3px}
+ .asset .en{margin-bottom:5px;font-size:11px}
+ .daily-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (min-width:700px) and (max-width:1450px) and (orientation:landscape) and (pointer:coarse){
+ .topbar{height:48px}
+ .hero{display:none}
+ .section-head{margin:8px 0 8px}
+ .section-head h2{font-size:16px}
+ .section-head p{display:none}
+ .daily-panel{margin:6px 0;padding:8px}
+ .daily-heading{margin-bottom:6px}
+ .daily-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+ .daily-item{padding:6px}
+ .daily-name{font-size:11px}
+ .daily-change{font-size:18px}
+ .daily-date{font-size:9px}
+ .grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px}
+ .asset{padding:8px;min-height:0!important}
+ .asset-top,.asset .en{display:none}
+ .asset h3{font-size:13px;margin:0 0 5px}
+ .market-mini{height:clamp(160px,27vh,320px)!important;margin:0}
+ .market-status{font-size:10px;padding:3px 0;min-height:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .footer,.note{display:none}
+}
+@media (min-width:700px) and (max-width:1450px) and (orientation:portrait) and (pointer:coarse){
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .hero{padding:12px 0 8px}
+ .hero h1{font-size:36px}
+ .market-mini{height:clamp(230px,29vh,370px)!important}
+}
+</style>
 </head>
 <body><div class="shell"><header class="topbar"><a class="brand" href="./">LAOXU<em> / </em>MARKET</a><div class="top-right"><label for="range-select" class="range-label">时间范围</label><select id="range-select" aria-label="全部六张图表的时间范围"><option value="1d">一天</option><option value="1m">一个月</option><option value="1y" selected>一年</option><option value="3y">三年</option><option value="5y">五年</option></select><span><i class="dot"></i>PUBLIC MARKET DATA</span></div></header>
 <section class="hero"><div class="eyebrow">THE GLOBAL PULSE / 全球市场脉搏</div><h1>See the <span>bigger picture.</span></h1><p class="subtitle">只看重要的六个市场。行情由本站本地图表绘制，不使用模拟数据。</p><div class="meta"><span>◉ 6 个关注市场</span><span>◷ 公共行情数据可能延迟</span><span id="clock" class="updated"></span></div></section>
