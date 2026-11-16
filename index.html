@@ -23,12 +23,12 @@ html,body{width:100%;min-height:100%;margin:0}
 .market-mini{height:auto!important;min-height:0;flex:1;margin:0;border-radius:4px}
 .market-status{font-size:8px;line-height:1.1;min-height:0;padding:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
-</style>
+#range-select{background:#16243a;color:#e9f0ff;border:1px solid rgba(112,229,211,.4);border-radius:9px;padding:8px 12px;font:inherit;font-size:13px;cursor:pointer}#range-select:focus-visible{outline:2px solid #70e5d3}.range-label{color:#9ab1cd;font-size:12px}@media(max-width:600px){.top-right>span{display:none}.range-label{font-size:11px}#range-select{font-size:12px;padding:7px 9px}}@media(orientation:landscape) and (max-height:650px) and (pointer:coarse){.top-right{display:flex!important}.range-label{font-size:9px}#range-select{font-size:11px;padding:3px 8px}} </style>
 </head>
-<body><div class="shell"><header class="topbar"><a class="brand" href="./">LAOXU<em> / </em>MARKET</a><div class="top-right"><span><i class="dot"></i>PUBLIC MARKET DATA</span><span class="chip">V1.0</span></div></header>
-<section class="hero"><div class="eyebrow">THE GLOBAL PULSE / 全球市场脉搏</div><h1>See the <span>bigger picture.</span></h1><p class="subtitle">只看重要的六个市场。全部行情图表来自 TradingView，不使用模拟数据。</p><div class="meta"><span>◉ 6 个关注市场</span><span>◷ 数据由 TradingView 提供，可能延迟</span><span id="clock" class="updated"></span></div></section>
+<body><div class="shell"><header class="topbar"><a class="brand" href="./">LAOXU<em> / </em>MARKET</a><div class="top-right"><label for="range-select" class="range-label">时间范围</label><select id="range-select" aria-label="全部六张图表的时间范围"><option value="1d">一天</option><option value="1m">一个月</option><option value="1y" selected>一年</option><option value="3y">三年</option><option value="5y">五年</option></select><span><i class="dot"></i>PUBLIC MARKET DATA</span></div></header>
+<section class="hero"><div class="eyebrow">THE GLOBAL PULSE / 全球市场脉搏</div><h1>See the <span>bigger picture.</span></h1><p class="subtitle">只看重要的六个市场。行情由本站本地图表绘制，不使用模拟数据。</p><div class="meta"><span>◉ 6 个关注市场</span><span>◷ 公共行情数据可能延迟</span><span id="clock" class="updated"></span></div></section>
 <section class="ticker-shell" id="ticker"><div class="loading">公开行情数据每三小时尝试更新一次 · 图表不依赖境外第三方脚本</div></section>
-<div class="section-head"><h2>Markets <span style="color:var(--muted);font-weight:400">/ 六大市场</span></h2><p>六张独立大图 · 周线 K 线 · 无模拟数据</p></div>
+<div class="section-head"><h2>Markets <span style="color:var(--muted);font-weight:400">/ 六大市场</span></h2><p>六张独立大图 · 右上角切换时间范围 · 六图联动</p></div>
 <main><section class="grid" id="grid" aria-label="六大市场"></section>
 <p class="note">行情展示仅供信息参考，不构成投资建议。指数可能使用代表性行情源，市场数据可能延迟、受交易所授权及地区限制。图表由本站原生 SVG 绘制；行情由 GitHub Actions 从 Yahoo Finance 非官方公共接口定时获取。数据可能延迟，免费数据源可能中断；网站会显示数据日期。网站不收集、存储或发布任何个人资产、持仓或其他隐私信息。</p></main>
 <footer class="footer"><div><strong style="color:var(--text)">LAOXU MARKET</strong><div>Six markets. One clear view.</div></div><div>Market data: Yahoo Finance (unofficial) · Rendered locally · <a href="https://github.com/xyh421/finance" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">GitHub</a><div>Public market information only · No personal finances</div></div></footer></div>
@@ -43,11 +43,37 @@ const markets=[
 const grid=document.querySelector("#grid");
 grid.innerHTML=markets.map((m,i)=>'<article class="asset"><div class="asset-top"><div class="asset-icon">'+m.icon+'</div><div class="asset-tag">'+m.tag+'</div></div><h3>'+m.title+'</h3><div class="en">'+m.sub+'</div><div class="market-mini" id="mini-'+i+'" aria-label="'+m.title+'周K线"><div class="loading">等待行情数据…</div></div><div class="market-status" id="status-'+i+'">数据准备中</div></article>').join("");
 function el(tag,attrs){const n=document.createElementNS("http://www.w3.org/2000/svg",tag);Object.entries(attrs||{}).forEach(([k,v])=>n.setAttribute(k,String(v)));return n}
-function draw(node,rows){node.replaceChildren();const candles=rows.slice(-52);const w=850,h=380,left=14,right=76,top=24,bottom=33;const low=Math.min(...candles.map(x=>x.low)),high=Math.max(...candles.map(x=>x.high));const pad=(high-low)*.07||1;const lo=low-pad,hi=high+pad;const y=v=>top+(hi-v)/(hi-lo)*(h-top-bottom);const dx=(w-left-right)/candles.length;const svg=el("svg",{viewBox:"0 0 850 380",preserveAspectRatio:"none",role:"img","aria-label":"最近52周真实周K线图"});svg.style.cssText="width:100%;height:100%;display:block";
+function draw(node,rows,range){node.replaceChildren();const candles=rows;const w=850,h=380,left=14,right=76,top=24,bottom=33;const low=Math.min(...candles.map(x=>x.low)),high=Math.max(...candles.map(x=>x.high));const pad=(high-low)*.07||1;const lo=low-pad,hi=high+pad;const y=v=>top+(hi-v)/(hi-lo)*(h-top-bottom);const dx=(w-left-right)/candles.length;const svg=el("svg",{viewBox:"0 0 850 380",preserveAspectRatio:"none",role:"img","aria-label":"真实市场K线图"});svg.style.cssText="width:100%;height:100%;display:block";
 for(let i=0;i<=4;i++){const val=lo+(hi-lo)*i/4;const yy=y(val);svg.append(el("line",{x1:left,y1:yy,x2:w-right+5,y2:yy,stroke:"#33435b","stroke-opacity":".48","stroke-dasharray":"3 5"}));const label=el("text",{x:w-right+11,y:yy+4,fill:"#a7b5cc","font-size":11});label.textContent=val.toLocaleString("en-US",{maximumFractionDigits:val<20?4:2});svg.append(label)}
-candles.forEach((c,i)=>{const x=left+(i+.5)*dx;const color=c.close>=c.open?"#53c8ad":"#ed667b";svg.append(el("line",{x1:x,y1:y(c.high),x2:x,y2:y(c.low),stroke:color,"stroke-width":1.7}));const yy=Math.min(y(c.open),y(c.close));svg.append(el("rect",{x:x-Math.max(2,dx*.28),y:yy,width:Math.max(4,dx*.56),height:Math.max(1.8,Math.abs(y(c.open)-y(c.close))),fill:color}));if(i%13===0||i===candles.length-1){const t=el("text",{x:x,y:h-10,fill:"#8798b3","font-size":11,"text-anchor":"middle"});t.textContent=c.date.slice(5);svg.append(t)}});
-const last=candles[candles.length-1],prev=candles[candles.length-2];const diff=last.close-prev.close;const label=el("text",{x:left,y:15,fill:diff>=0?"#53c8ad":"#ed667b","font-size":14,"font-weight":600});label.textContent=last.close.toLocaleString("en-US",{maximumFractionDigits:4})+"   "+(diff>=0?"+":"")+(diff/prev.close*100).toFixed(2)+"% 周变化";svg.append(label);node.append(svg)}
-async function load(){try{const resp=await fetch("./data/markets.json?v="+Date.now(),{cache:"no-store"});if(!resp.ok)throw Error("行情数据文件尚未生成（HTTP "+resp.status+"）");const payload=await resp.json();markets.forEach((m,i)=>{const node=document.getElementById("mini-"+i),status=document.getElementById("status-"+i),data=payload.markets?.[m.id];if(!data?.weekly?.length){node.innerHTML='<div class="loading">暂无可用行情数据</div>';status.textContent="数据源暂不可用";return}draw(node,data.weekly);const date=new Date(data.lastMarketTimestamp*1000);const stale=Date.now()-date.getTime()>8*86400000;status.textContent="行情截至 "+date.toLocaleString("zh-CN",{timeZone:"Asia/Shanghai",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})+(stale?" · 数据可能过期":"")+" · 周K线 · Yahoo Finance 公共数据";status.style.color=stale?"#eec578":"#8b9cb7"});}catch(err){markets.forEach((m,i)=>{document.getElementById("mini-"+i).innerHTML='<div class="loading">行情暂不可用</div>';document.getElementById("status-"+i).textContent=err.message});}}
+candles.forEach((c,i)=>{const x=left+(i+.5)*dx;const color=c.close>=c.open?"#53c8ad":"#ed667b";svg.append(el("line",{x1:x,y1:y(c.high),x2:x,y2:y(c.low),stroke:color,"stroke-width":1.7}));const yy=Math.min(y(c.open),y(c.close));svg.append(el("rect",{x:x-Math.max(2,dx*.28),y:yy,width:Math.max(4,dx*.56),height:Math.max(1.8,Math.abs(y(c.open)-y(c.close))),fill:color}));if(i%Math.max(1,Math.ceil(candles.length/5))===0||i===candles.length-1){const t=el("text",{x:x,y:h-10,fill:"#8798b3","font-size":11,"text-anchor":"middle"});t.textContent=range==="1d"?c.date.slice(11,16):c.date.slice(0,10);svg.append(t)}});
+const last=candles[candles.length-1],prev=candles[0];const diff=last.close-prev.open;const label=el("text",{x:left,y:15,fill:diff>=0?"#53c8ad":"#ed667b","font-size":14,"font-weight":600});label.textContent=last.close.toLocaleString("en-US",{maximumFractionDigits:4})+"   "+(diff>=0?"+":"")+(diff/prev.open*100).toFixed(2)+"% 区间变化";svg.append(label);node.append(svg)}
+const rangeSelect=document.getElementById("range-select");
+let currentPayload=null;
+function rowsFor(data,range){
+ const list=range==="1d"?data.intraday:range==="1m"?data.daily:range==="5y"?data.monthly:data.weekly;
+ if(!Array.isArray(list))return [];
+ if(range==="1d")return list;
+ const days={ "1m":31,"1y":366,"3y":1096,"5y":1830 }[range];
+ const end=Date.parse(data.daily?.at(-1)?.date||data.weekly?.at(-1)?.date||"");
+ if(!Number.isFinite(end))return [];
+ const cutoff=end-days*86400000;
+ return list.filter(x=>Date.parse(x.date)>=cutoff);
+}
+function renderAll(){
+ if(!currentPayload)return;
+ const range=rangeSelect.value;
+ markets.forEach((m,i)=>{
+  const node=document.getElementById("mini-"+i),status=document.getElementById("status-"+i),data=currentPayload.markets?.[m.id];
+  const rows=data?rowsFor(data,range):[];
+  if(rows.length<2){node.replaceChildren();const msg=document.createElement("div");msg.className="loading";msg.textContent="该时间范围暂无足够真实行情";node.append(msg);status.textContent="暂无数据 · 请切换时间范围";return}
+  draw(node,rows,range);
+  const date=new Date(data.lastMarketTimestamp*1000),stale=Date.now()-date.getTime()>8*86400000;
+  status.textContent="截至 "+date.toLocaleString("zh-CN",{timeZone:"Asia/Shanghai",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})+(stale?" · 可能过期":"")+" · "+rangeSelect.selectedOptions[0].text+" · 公共行情";
+  status.style.color=stale?"#eec578":"#8b9cb7";
+ });
+}
+rangeSelect.addEventListener("change",renderAll);
+async function load(){try{const resp=await fetch("./data/markets.json?v="+Date.now(),{cache:"no-store"});if(!resp.ok)throw Error("行情文件尚未生成 HTTP "+resp.status);currentPayload=await resp.json();renderAll()}catch(err){markets.forEach((m,i)=>{document.getElementById("mini-"+i).innerHTML='<div class="loading">行情暂不可用</div>';document.getElementById("status-"+i).textContent=err.message})}}
 load();setInterval(load,15*60*1000);
 function clock(){document.querySelector("#clock").textContent=new Intl.DateTimeFormat("zh-CN",{timeZone:"Asia/Shanghai",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date())+" 北京时间"}clock();setInterval(clock,60000);
 </script></body></html>
