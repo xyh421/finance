@@ -19,46 +19,67 @@ SYMBOLS = {
 }
 OUT = pathlib.Path("data/markets.json")
 
-def fetch(symbol):
+def request_chart(symbol, range_, interval):
     code = urllib.parse.quote(symbol, safe="")
-    last_error = None
+    error = None
     for host in ("query1.finance.yahoo.com", "query2.finance.yahoo.com"):
-        url = f"https://{host}/v8/finance/chart/{code}?range=2y&interval=1d"
+        url = f"https://{host}/v8/finance/chart/{code}?range={range_}&interval={interval}"
         try:
-            req = urllib.request.Request(url, headers={
-                "User-Agent": "Mozilla/5.0 (compatible; PublicMarketDashboard/1.0)",
-                "Accept": "application/json",
-            })
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"})
             with urllib.request.urlopen(req, timeout=18) as res:
-                payload = json.load(res)
-            result = payload["chart"]["result"][0]
-            stamps = result["timestamp"]
-            quotes = result["indicators"]["quote"][0]
-            weekly = {}
-            for i, stamp in enumerate(stamps):
-                vals = {k: quotes[k][i] for k in ("open", "high", "low", "close")}
-                if any(v is None for v in vals.values()):
-                    continue
-                day = dt.datetime.fromtimestamp(stamp, dt.timezone.utc).date()
-                monday = day - dt.timedelta(days=day.weekday())
-                key = monday.isoformat()
-                if key not in weekly:
-                    weekly[key] = {"date": key, **vals}
-                else:
-                    w = weekly[key]
-                    w["high"] = max(w["high"], vals["high"])
-                    w["low"] = min(w["low"], vals["low"])
-                    w["close"] = vals["close"]
-            rows = list(weekly.values())
-            if len(rows) < 10:
-                raise ValueError("Insufficient weekly observations")
-            return {"symbol": symbol, "currency": result.get("meta", {}).get("currency"),
-                    "lastMarketTimestamp": stamps[-1],
-                    "weekly": [{k: (round(v, 5) if isinstance(v, float) else v) for k, v in row.items()} for row in rows]}
+                result = json.load(res)["chart"]["result"][0]
+            return result
         except Exception as exc:
-            last_error = str(exc)
+            error = str(exc)
             time.sleep(1)
-    raise RuntimeError(last_error)
+    raise RuntimeError(error)
+
+def extract(result):
+    stamps = result.get("timestamp") or []
+    quote = result["indicators"]["quote"][0]
+    rows = []
+    for i, stamp in enumerate(stamps):
+        vals = {k: quote[k][i] for k in ("open", "high", "low", "close")}
+        if any(v is None for v in vals.values()):
+            continue
+        rows.append({"date": dt.datetime.fromtimestamp(stamp, dt.timezone.utc).isoformat(),
+                     **{k: round(v, 5) for k, v in vals.items()}})
+    return rows
+
+def aggregate(rows, mode):
+    grouped = {}
+    for row in rows:
+        date = dt.date.fromisoformat(row["date"][:10])
+        if mode == "weekly":
+            key = (date - dt.timedelta(days=date.weekday())).isoformat()
+        else:
+            key = date.replace(day=1).isoformat()
+        if key not in grouped:
+            grouped[key] = {"date": key, **{k: row[k] for k in ("open", "high", "low", "close")}}
+        else:
+            current = grouped[key]
+            current["high"] = max(current["high"], row["high"])
+            current["low"] = min(current["low"], row["low"])
+            current["close"] = row["close"]
+    return list(grouped.values())
+
+def fetch(symbol):
+    historical = request_chart(symbol, "5y", "1d")
+    daily = extract(historical)
+    if len(daily) < 10:
+        raise ValueError("Insufficient historical observations")
+    weekly = aggregate(daily, "weekly")
+    monthly = aggregate(daily, "monthly")
+    result = {"symbol": symbol, "currency": historical.get("meta", {}).get("currency"),
+              "lastMarketTimestamp": historical["timestamp"][-1],
+              "daily": daily, "weekly": weekly, "monthly": monthly}
+    try:
+        intraday = request_chart(symbol, "1d", "5m")
+        result["intraday"] = extract(intraday)
+    except Exception as exc:
+        print(f"Intraday unavailable for {symbol}: {exc}")
+        result["intraday"] = []
+    return result
 
 def main():
     old = {}
