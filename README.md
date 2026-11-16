@@ -13,7 +13,7 @@ Public finance dashboard at **https://finance.laoxu.org** (after GitHub Pages an
 
 ## Privacy
 
-No personal holdings, balances, amounts, login, accounts, or private data. The homepage is static. Third-party TradingView embeds fetch market data from TradingView, subject to its own privacy policy, data availability and exchange delays. The decorative sparklines in the cards are **not** real quotes; click a card to see its market chart.
+No personal holdings, balances, amounts, login, accounts, or private data. The homepage is static. Third-party TradingView embeds fetch market data from TradingView, subject to its own privacy policy, data availability and exchange delays. All six cards embed TradingView's free Mini Chart widget with third-party market quotes and charts. No mocked prices or simulated sparklines. Quotes may be delayed and widgets may be blocked by network restrictions. Click a card's detail button for the larger market chart.
 
 ## Deployment
 
