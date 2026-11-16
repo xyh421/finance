@@ -5,6 +5,8 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  pages: write
+  id-token: write
 concurrency:
   group: market-data
   cancel-in-progress: false
@@ -27,3 +29,12 @@ jobs:
             git commit -m "Update public market snapshots"
             git push
           fi
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload site with fresh data
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Publish site
+        id: deployment
+        uses: actions/deploy-pages@v4
