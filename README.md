@@ -1,25 +1,38 @@
 # LAOXU MARKET
 
-Public finance dashboard at **https://finance.laoxu.org** (after GitHub Pages and DNS are configured).
+Public six-market dashboard: https://finance.laoxu.org
 
-## Market coverage (six only)
+## Markets and verified identifiers
 
-1. USD/CNY — `FX_IDC:USDCNY`
-2. NASDAQ 100 — `NASDAQ:NDX` (NASDAQ-100; not Nasdaq Composite)
-3. S&P 500 — `SP:SPX`
-4. Spot gold XAU/USD — `OANDA:XAUUSD`
-5. BTC/USD — `BITSTAMP:BTCUSD`
-6. Shanghai Composite — `SSE:000001`
+| Market | Yahoo Finance symbol | Note |
+|---|---|---|
+| USD/CNY | `CNY=X` | FX |
+| Nasdaq-100 | `^NDX` | Nasdaq-100, not Nasdaq Composite |
+| S&P 500 | `^GSPC` | Index |
+| Gold | `GC=F` | COMEX gold futures, **not spot XAU/USD** |
+| Bitcoin USD | `BTC-USD` | Crypto |
+| Shanghai Composite | `000001.SS` | SSE index |
+
+The browser checks each JSON payload's symbol against the expected identifier. Mismatches are not rendered.
+
+## Plan A: market reliability
+
+- Six full-width responsive candlestick charts, always **weekly** candles.
+- One shared range selector: 1 month, 1 year, 3 years, 5 years.
+- Latest daily change overview uses a public edge quote when valid and recent; otherwise falls back to the last daily close from the published snapshot with its date visible.
+- Per-chart status includes source symbol, timestamp, cached/failed status and staleness warning.
+- No simulated quotes or candles. If data is unavailable, an error is displayed.
+- Historical data: GitHub Actions runs `scripts/update_markets.py` every 3 hours (schedule is best effort), retrieving the **unofficial** Yahoo Finance public chart endpoint. Quotes may be delayed or unavailable.
+- Optional live quote endpoint: `https://quotes.laoxu.org/api/quotes`; if unavailable the dashboard continues using the published snapshot.
 
 ## Privacy
 
-No personal holdings, balances, amounts, login, accounts, or private data. The homepage is static. Third-party TradingView embeds fetch market data from TradingView, subject to its own privacy policy, data availability and exchange delays. All six cards embed TradingView's free Mini Chart widget with third-party market quotes and charts. No mocked prices or simulated sparklines. Quotes may be delayed and widgets may be blocked by network restrictions. Click a card's detail button for the larger market chart.
+The repository contains no holdings, balances, account details, credentials or personal financial information. Public third-party quote requests still expose ordinary web request metadata (such as IP address) to their providers.
 
-## Deployment
+## GitHub Pages deployment
 
-1. In **Settings → Pages** set **Deploy from a branch**, branch **main**, folder **/(root)**.
-2. In **Settings → Pages → Custom domain** enter `finance.laoxu.org` and save.
-3. In Cloudflare DNS create a CNAME: name `finance`, target `xyh421.github.io`; start with DNS only (grey cloud).
-4. Wait for GitHub's DNS verification and certificate provisioning, then enable **Enforce HTTPS**.
+`.github/workflows/deploy.yml` deploys on every push to `main` or manual dispatch. `.github/workflows/market-data.yml` updates public market snapshots and deploys the refreshed site on a scheduled or manual run.
 
-Website is pure HTML/CSS/JS; no build step or paid API key. The root `CNAME` file is included in the repository. Do not put secrets into this public repository.
+In repository **Settings → Pages**, choose **GitHub Actions** as the build and deployment source. Cloudflare CNAME: `finance` → `xyh421.github.io` (DNS only). Custom domain is configured by root `CNAME` file.
+
+No paid API key required. Data availability is not guaranteed by Yahoo Finance.
