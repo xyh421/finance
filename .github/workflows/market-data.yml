@@ -23,6 +23,8 @@ jobs:
           python-version: '3.12'
       - name: Install AKShare for Eastmoney index feed
         run: python -m pip install "akshare>=1.20.54,<2"
+      - name: Validate Python source
+        run: python -m py_compile scripts/update_markets.py
       - name: Fetch public historical prices
         run: python scripts/update_markets.py
       - name: Commit updated public JSON
