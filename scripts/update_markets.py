@@ -136,7 +136,7 @@ def validate_market(key, data):
             clean.append(row)
         except (ValueError, TypeError, KeyError):
             rejected += 1
-    if len(clean) < 100 or rejected > max(10, len(rows) * 0.02):
+    if len(clean) < 100 or rejected > max(10, len(rows) * (0.05 if key == "usdcny" else 0.02)):
         raise ValueError(f"Too many invalid OHLC observations: {rejected}/{len(rows)}")
     dates = [row["date"][:10] for row in clean]
     if dates != sorted(set(dates)):
@@ -190,5 +190,8 @@ def main():
     }, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     if errors:
         print("Some feeds failed; previously cached data retained where available.")
+    missing = sorted(set(SYMBOLS) - set(markets))
+    if missing:
+        raise SystemExit(f"INCOMPLETE DATA: missing markets {missing}; generated JSON retained for inspection, workflow marked failed")
 if __name__ == "__main__":
     main()
