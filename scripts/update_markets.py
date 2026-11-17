@@ -122,14 +122,30 @@ def validate_market(key, data):
     rows = data.get("daily") or []
     if len(rows) < 100:
         raise ValueError("Insufficient daily observations")
+    clean = []
+    rejected = 0
     for row in rows:
-        o,h,l,c = (float(row[k]) for k in ("open","high","low","close"))
-        dt.date.fromisoformat(row["date"][:10])
-        if not all(math.isfinite(v) and v > 0 for v in (o,h,l,c)) or l > min(o,c) or h < max(o,c):
-            raise ValueError("Invalid OHLC values")
-    dates = [row["date"][:10] for row in rows]
+        try:
+            o,h,l,c = (float(row[k]) for k in ("open","high","low","close"))
+            dt.date.fromisoformat(row["date"][:10])
+            # Some public FX feeds have isolated malformed OHLC bars.
+            # Discard the actual invalid observation; never fabricate a candle.
+            if not all(math.isfinite(v) and v > 0 for v in (o,h,l,c)) or l > min(o,c) or h < max(o,c) or l > h:
+                rejected += 1
+                continue
+            clean.append(row)
+        except (ValueError, TypeError, KeyError):
+            rejected += 1
+    if len(clean) < 100 or rejected > max(10, len(rows) * 0.02):
+        raise ValueError(f"Too many invalid OHLC observations: {rejected}/{len(rows)}")
+    dates = [row["date"][:10] for row in clean]
     if dates != sorted(set(dates)):
         raise ValueError("Unsorted or duplicate dates")
+    if rejected:
+        print(f"Discarded {rejected} malformed source bars for {key}; no synthetic data")
+    data["daily"] = clean
+    data["weekly"] = aggregate(clean, "weekly")
+    data["monthly"] = aggregate(clean, "monthly")
     data["unit"] = UNITS[key]
     data.setdefault("source", "Yahoo Finance")
     data.setdefault("sourceSymbol", SYMBOLS[key])
