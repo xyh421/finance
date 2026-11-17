@@ -68,8 +68,8 @@ html,body{width:100%;min-height:100%;margin:0}
 <section class="daily-panel" aria-label="六大市场最新交易日涨跌"><div class="daily-heading"><strong>今日市场涨跌</strong><span>每60秒检查报价 · 免费数据可能延迟 · 失败时显示带日期的历史快照</span></div><div class="daily-grid" id="daily-grid" aria-live="polite"></div></section>
 <div class="section-head"><h2>Markets <span style="color:var(--muted);font-weight:400">/ 六大市场</span></h2><p>六张独立大图 · 右上角切换时间范围 · 六图联动</p></div>
 <main><section class="grid" id="grid" aria-label="六大市场"></section>
-<p class="note">行情展示仅供信息参考，不构成投资建议。指数可能使用代表性行情源，市场数据可能延迟、受交易所授权及地区限制。图表由本站原生 SVG 绘制；行情由 GitHub Actions 从 Yahoo Finance 非官方公共接口定时获取。数据可能延迟，免费数据源可能中断；网站会显示数据日期。网站不收集、存储或发布任何个人资产、持仓或其他隐私信息。</p></main>
-<footer class="footer"><div><strong style="color:var(--text)">LAOXU MARKET</strong><div>Six markets. One clear view.</div></div><div>Market data: Yahoo Finance (unofficial) · Rendered locally · <a href="https://github.com/xyh421/finance" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">GitHub</a><div>Public market information only · No personal finances</div></div></footer></div>
+<p class="note">行情展示仅供信息参考，不构成投资建议。指数可能使用代表性行情源，市场数据可能延迟、受交易所授权及地区限制。图表由本站原生 SVG 绘制；行情由 GitHub Actions 从东方财富（AKShare）及 Yahoo Finance 非官方公共接口定时获取，并逐项校验。数据可能延迟，免费数据源可能中断；网站会显示数据日期。网站不收集、存储或发布任何个人资产、持仓或其他隐私信息。</p></main>
+<footer class="footer"><div><strong style="color:var(--text)">LAOXU MARKET</strong><div>Six markets. One clear view.</div></div><div>Market data: Eastmoney / AKShare + Yahoo Finance (unofficial) · Rendered locally · <a href="https://github.com/xyh421/finance" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">GitHub</a><div>Public market information only · No personal finances</div></div></footer></div>
 <script>
 const markets=[
 {id:"usdcny",title:"美元 / 人民币",sub:"USD / CNY · 外汇",icon:"¥",tag:"FOREX",color:"#70e5d3"},
@@ -120,7 +120,7 @@ function renderDaily(){
     const positive=change>0,negative=change<0;
     value.classList.add(positive?"up":negative?"down":"flat");
     value.textContent=(positive?"+":"")+pct.toFixed(2)+"%";
-    sub.textContent="收盘 "+now.close.toLocaleString("en-US",{maximumFractionDigits:4})+" · "+now.date.slice(0,10)+" · 历史快照";
+    sub.textContent="收盘 "+now.close.toLocaleString("en-US",{maximumFractionDigits:4})+" · "+now.date.slice(0,10)+" · "+(data.source||"来源未标注")+" · 历史快照";
    }else{value.textContent="暂无数据";sub.textContent="报价无效"}
   }else{value.textContent="暂无数据";sub.textContent="等待日线数据更新"}
   card.append(value,sub);dailyGrid.append(card);
@@ -135,7 +135,7 @@ function renderAll(){
   if(rows.length<2){node.replaceChildren();const msg=document.createElement("div");msg.className="loading";msg.textContent="该时间范围暂无足够真实行情";node.append(msg);status.textContent=valid?"暂无数据 · 请切换时间范围":"标的缺失或不匹配 · 已阻止错误行情";return}
   draw(node,rows,range);
   const date=new Date(data.lastMarketTimestamp*1000),stale=!Number.isFinite(date.getTime())||Date.now()-date.getTime()>8*86400000;
-  status.textContent="截至 "+date.toLocaleString("zh-CN",{timeZone:"Asia/Shanghai",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})+(stale?" · 数据可能过期":"")+" · "+rangeSelect.selectedOptions[0].text+"周K线 · "+data.symbol+" · "+(currentPayload.errors?.[m.id]?"本次更新失败，显示缓存":"历史快照");
+  status.textContent="截至 "+date.toLocaleString("zh-CN",{timeZone:"Asia/Shanghai",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})+(stale?" · 数据可能过期":"")+" · "+rangeSelect.selectedOptions[0].text+"周K线 · "+data.symbol+" · "+(data.source||"来源未标注")+" ("+(data.sourceSymbol||data.symbol)+") · "+(data.unit||"单位未标注")+" · "+(currentPayload.errors?.[m.id]?"本次更新失败，显示缓存":"历史快照");
   status.style.color=stale?"#eec578":"#8b9cb7";
  });
 }
